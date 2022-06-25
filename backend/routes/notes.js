@@ -14,8 +14,8 @@ routes.get('/fetchallnotes',fetchuser,async (req,res)=>{
     }
 })
 routes.post('/addnote',fetchuser,[
-    body('title',"Title Should be of minimum length 3").isLength({ min: 3 }),
-    body('description',"Description Should be of minimum length 5").isLength({ min: 5 }),
+    body("title","Title Should be of minimum length 3").isLength({ min: 3 }),
+    body("description","Description Should be of minimum length 5").isLength({ min: 5 }),
 ],async(req,res)=>{
     try {
         const errors = validationResult(req);  // result of validation

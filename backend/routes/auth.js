@@ -19,13 +19,14 @@ routes.post('/createNewUser',[  // validation using express-validator
 ],async (req,res)=>{
     const errors = validationResult(req);  // result of validation
     // if their are errors in validation return status code 400
+    let success=false;
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success,errors: errors.array() });
     }
     try{
     let user=await User.findOne({email:req.body.email});
     if(user){
-      return res.status(400).send("User with This email aldready exists");
+      return res.status(400).send({success,msg:"User with This email aldready exists"});
     }
     const salt=await bcrypt.genSalt(10);
     const securedPass=await bcrypt.hash(req.body.password,salt);
@@ -56,10 +57,10 @@ routes.post('/createNewUser',[  // validation using express-validator
       }
       const authToken=jwt.sign(data,JWT_SECRET);
 
-      res.send({authToken});
+      res.send({success:(!success),authToken});
     }catch(err){
       console.log(err.message);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send({success,msg:"Internal Server Error"});
     }
 });
 
@@ -69,20 +70,21 @@ routes.post('/login',[  // validation using express-validator
     body('email',"Enter Valid Email").isEmail(),
     body('password',"Password Cannot be Blank").exists(),
 ],async (req,res)=>{
+    let success=false;
     const errors = validationResult(req);  // result of validation
     // if their are errors in validation return status code 400
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success,errors: errors.array() });
     }
     const {email,password}=req.body;
     try{
         let user=await User.findOne({email});
         if(!user){
-          return res.status(400).send("user:Please Enter Correct credential");
+          return res.status(400).send({success,msg:"Please Enter Correct credential"});
         }
         const passCheck=await bcrypt.compare(password,user.password);
         if(!passCheck){
-          return res.status(400).send("pass:Please Enter Correct credential");
+          return res.status(400).send({success,msg:"Please Enter Correct credential"});
         }
         const data={
           user:{
@@ -91,10 +93,10 @@ routes.post('/login',[  // validation using express-validator
         }
         const authToken=jwt.sign(data,JWT_SECRET);
 
-        res.send({authToken});
+        res.send({success:true,authToken});
     }catch(err){
       console.log(err.message);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send({success,msg:"Internal Server Error"});
     }
 });
 

@@ -1,8 +1,32 @@
-import React,{useEffect} from 'react'
+import React from 'react'
+import { useState,useContext } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'
+import NoteContext from '../contexts/NoteContext';
+
 
 export default function Navbar() {
   let location = useLocation();
+  const context = useContext(NoteContext);
+  let {notes} = context;
+  const signout=()=>{
+     localStorage.removeItem('auth-token');
+  }
+  const [username, setUsername] = useState('')
+  const getUser=async()=>{
+    const response = await fetch(`http://localhost:5000/api/auth/getuser`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'auth-token':localStorage.getItem('auth-token')
+      }
+    });
+    const user=await response.json();
+    setUsername(user.name);
+  }
+  useEffect(() => {
+     getUser();
+  }, [notes]);
   return (
     <div>
         <nav className="navbar navbar-expand-lg bg-dark navbar-dark">
@@ -17,13 +41,14 @@ export default function Navbar() {
                   <Link className={`nav-link ${location.pathname==="/"?"active":""}`} aria-current="page" to="/">Home</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ${location.pathname==="/about"?"active":""}`} to="/about">About</Link>
+                  <Link className={`nav-link ${location.pathname==="/yournotes"?"active":""}`} aria-current="page" to="/yournotes">Your-Notes</Link>
                 </li>
               </ul>
-              <form className="d-flex" role="search">
-                <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-                <button className="btn btn-outline-success" type="submit">Search</button>
-              </form>
+              
+              {localStorage.getItem('auth-token')===null ? <><Link className="btn btn-outline-success mx-1" to="/login"type="submit">Login</Link>
+              <Link className="btn btn-outline-success mx-1" to="/signup"type="submit">SignUp</Link></>:<div> <div className="btn btn-secondary" data-bs-container="body">
+              <i className="fa-solid fa-user"></i> {username}
+              </div> <Link className="btn btn-outline-success mx-1" to="/login" onClick={signout} type="submit">Signout</Link></div>}
             </div>
           </div>
         </nav>
